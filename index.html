@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidereus Nuncius — Mission Control 🌌</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-space: #0b0f19;       /* Azul oscuro astronómico profundo */
+            --bg-card: #131c2e;        /* Contenedor estelar */
+            --text-light: #f1f5f9;     /* Blanco nebula */
+            --text-dim: #94a3b8;       /* Gris cósmico */
+            --starlight: #38bdf8;      /* Azul cian brillante */
+            --gold-sun: #f59e0b;       /* Oro sideral */
+            --border-glow: #1e293b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --highlight: rgba(56, 189, 248, 0.12);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-space);
+            background-image: radial-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 0);
+            background-size: 32px 32px;
+            color: var(--text-light);
+            margin: 0;
+            padding: 24px;
+        }
+
+        .container { max-width: 1500px; margin: 0 auto; }
+
+        header {
+            background-color: var(--bg-card);
+            padding: 24px 32px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-glow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.05em; color: var(--text-light); }
+        header h1 span { color: var(--starlight); }
+        header p { margin: 4px 0 0 0; color: var(--text-dim); font-size: 13px; font-family: monospace; }
+
+        .search-box input {
+            background-color: var(--bg-space);
+            border: 1px solid var(--border-glow);
+            color: var(--text-light);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 320px;
+            outline: none;
+        }
+        .search-box input:focus { border-color: var(--starlight); }
+
+        .layout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-glow);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 14px;
+            color: var(--gold-sun);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-bottom: 1px solid var(--border-glow);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        /* Tabla de Actividades */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+        th { padding: 14px; background-color: #090d16; color: var(--starlight); border-bottom: 2px solid var(--border-glow); text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
+        td { padding: 14px; border-bottom: 1px solid var(--border-glow); color: var(--text-light); line-height: 1.5; vertical-align: middle; }
+        tr:hover { background-color: rgba(56, 189, 248, 0.03); }
+
+        /* Badges de Estado */
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .badge-high { background-color: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-medium { background-color: rgba(245, 158, 11, 0.15); color: var(--gold-sun); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-active { background-color: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+        /* Sistema de Monitoreo Semanal de Roles */
+        .date-label { font-size: 11px; font-family: monospace; color: var(--starlight); margin-bottom: 12px; background: rgba(56, 189, 248, 0.05); padding: 4px 8px; border-radius: 4px; display: inline-block; }
+        .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border-glow); padding-bottom: 8px; }
+        .tab-btn { background: var(--bg-space); border: 1px solid var(--border-glow); color: var(--text-dim); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+        .tab-btn.active { background: var(--gold-sun); color: var(--bg-space); border-color: var(--gold-sun); font-weight: 600; }
+        
+        .week-content { display: none; }
+        .week-content.active { display: block; }
+
+        .member-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: var(--bg-space);
+            margin-bottom: 8px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .member-info { font-size: 13.5px; font-weight: 500; }
+        .member-info span { font-size: 11px; display: block; color: var(--text-dim); font-family: monospace; }
+        
+        .toggle-switch {
+            background: #1e293b;
+            border: 1px solid var(--border-glow);
+            color: var(--text-dim);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .toggle-switch.ready {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .week-prev-pane .toggle-switch { pointer-events: none; opacity: 0.6; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>SIDEREUS NUNCIUS <span>• MISSION CONTROL 🌌</span></h1>
+            <p>Ecosistema de Monitoreo de Actividades y Comunes de Conocimiento</p>
+        </div>
+        <div class="search-box">
+            <input type="text" id="taskSearch" onkeyup="filterTasks()" placeholder="Filtrar por actividad o responsable...">
+        </div>
+    </header>
+
+    <div class="layout-grid">
+        <!-- ÁREA DE OPERACIONES DE COMPONENTES MACRO -->
+        <div class="main-pane">
+            <div class="card">
+                <h2>Cronograma de Actividades Críticas</h2>
+                <div class="table-wrapper" id="activities-table-target">
+                    <p style="color: var(--text-dim);">Conectando con la base de datos estelar...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- BARRA LATERAL: MONITOREO SEMANAL DE MIEMBROS -->
+        <div class="sidebar-pane">
+            <div class="card">
+                <h2>Monitoreo de Miembros</h2>
+                <div class="date-label">Ciclo Actual: 06 Jul - 12 Jul 2026</div>
+                
+                <div class="tabs">
+                    <button class="tab-btn active" id="tab-curr" onclick="toggleWeekView('current')">Semana Actual</button>
+                    <button class="tab-btn" id="tab-prev" onclick="toggleWeekView('previous')">Semana Anterior</button>
+                </div>
+
+                <!-- SEMANA EN CURSO -->
+                <div id="panel-current" class="week-content active">
+                    <div id="current-members-list"></div>
+                </div>
+
+                <!-- HISTORIAL ESTÁTICO DE LA SEMANA PREVIA -->
+                <div id="panel-previous" class="week-content week-prev-pane">
+                    <div id="previous-members-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const teamMembers = [
+        { name: "Sebastian", role: "Coordinación" },
+        { name: "Fernando", role: "Sistemas & Web" },
+        { name: "Jose", role: "Airtable Data" },
+        { name: "Josue", role: "Estructuras" },
+        { name: "Luis", role: "Accesos PUCP" },
+        { name: "Esteban", role: "Recaudación" },
+        { name: "Juan Diego", role: "Logística" }
+    ];
+
+    function initTeamDashboard() {
+        if (!localStorage.getItem('sidereus_current_week')) {
+            localStorage.setItem('sidereus_current_week', JSON.stringify(new Array(teamMembers.length).fill(false)));
+        }
+        if (!localStorage.getItem('sidereus_previous_week')) {
+            localStorage.setItem('sidereus_previous_week', JSON.stringify(new Array(teamMembers.length).fill(false)));
+        }
+        renderTeamStatus();
+    }
+
+    function renderTeamStatus() {
+        const currentStates = JSON.parse(localStorage.getItem('sidereus_current_week'));
+        const previousStates = JSON.parse(localStorage.getItem('sidereus_previous_week'));
+
+        let currentHTML = "";
+        let previousHTML = "";
+
+        teamMembers.forEach((member, i) => {
+            currentHTML += `
+                <div class="member-row" style="${currentStates[i] ? 'border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.02);' : ''}">
+                    <div class="member-info">${member.name} <span>${member.role}</span></div>
+                    <button class="toggle-switch ${currentStates[i] ? 'ready' : ''}" onclick="changeMemberStatus(${i})">
+                        ${currentStates[i] ? '✓ Libre' : '• Pendiente'}
+                    </button>
+                </div>`;
+
+            previousHTML += `
+                <div class="member-row">
+                    <div class="member-info" style="color: var(--text-dim);">${member.name} <span>${member.role}</span></div>
+                    <button class="toggle-switch ${previousStates[i] ? 'ready' : ''}" disabled>
+                        ${previousStates[i] ? '✓ Cumplió' : '• No Auditado'}
+                    </button>
+                </div>`;
+        });
+
+        document.getElementById('current-members-list').innerHTML = currentHTML;
+        document.getElementById('previous-members-list').innerHTML = previousHTML;
+    }
+
+    function changeMemberStatus(index) {
+        const states = JSON.parse(localStorage.getItem('sidereus_current_week'));
+        states[index] = !states[index];
+        localStorage.setItem('sidereus_current_week', JSON.stringify(states));
+        renderTeamStatus();
+    }
+
+    function toggleWeekView(week) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.week-content').forEach(c => c.classList.remove('active'));
+
+        if (week === 'current') {
+            document.getElementById('tab-curr').classList.add('active');
+            document.getElementById('panel-current').classList.add('active');
+        } else {
+            document.getElementById('tab-prev').classList.add('active');
+            document.getElementById('panel-previous').classList.add('active');
+        }
+    }
+
+    initTeamDashboard();
+
+    // RENDERIZADOR DE BASE DE DATOS CSV
+    function buildTableHTML(data) {
+        if (!data || data.length === 0) return '<p style="color: var(--text-dim);">Sin actividades registradas.</p>';
+
+        let html = '<table><thead><tr>';
+        const headers = Object.keys(data[0]).filter(h => h.trim() !== "");
+        
+        headers.forEach(h => html += `<th>${h}</th>`);
+        html += '</tr></thead><tbody id="searchable-rows">';
+
+        data.forEach(row => {
+            if (Object.values(row).some(v => v && v.trim() !== "")) {
+                html += '<tr>';
+                headers.forEach(h => {
+                    let val = row[h] ? row[h].trim() : '';
+                    
+                    if (h.toLowerCase() === 'priority') {
+                        let cls = val.toLowerCase() === 'high' ? 'badge-high' : 'badge-medium';
+                        html += `<td><span class="badge ${cls}">${val}</span></td>`;
+                    } else if (h.toLowerCase() === 'status') {
+                        html += `<td><span class="badge badge-active">${val}</span></td>`;
+                    } else {
+                        html += `<td>${val}</td>`;
+                    }
+                });
+                html += '</tr>';
+            }
+        });
+        html += '</tbody></table>';
+        return html;
+    }
+
+    function filterTasks() {
+        let val = document.getElementById("taskSearch").value.toLowerCase();
+        let rows = document.querySelectorAll("#searchable-rows tr");
+        rows.forEach(r => r.style.display = r.textContent.toLowerCase().includes(val) ? "" : "none");
+    }
+
+    // Ruta de sincronización automática con tu archivo data/tasks.csv
+    const githubUser = window.location.hostname.split('.')[0];
+    const csvSource = `https://raw.githubusercontent.com/${githubUser}/sidereus-dashboard/main/data/tasks.csv`;
+
+    Papa.parse(csvSource, {
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(r) { document.getElementById('activities-table-target').innerHTML = buildTableHTML(r.data); },
+        error: function() {
+            // Respaldo local por si hay retraso en el despliegue de los servidores de GitHub
+            Papa.parse("../data/tasks.csv", {
+                download: true, header: true, skipEmptyLines: true,
+                complete: function(r) { document.getElementById('activities-table-target').innerHTML = buildTableHTML(r.data); }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
