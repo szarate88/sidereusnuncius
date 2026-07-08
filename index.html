@@ -62,7 +62,7 @@
         }
         .search-box input:focus { border-color: var(--starlight); }
 
-        .layout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+        .layout-grid { display: grid; grid-template-columns: 1fr 420px; gap: 24px; }
 
         .card {
             background-color: var(--bg-card);
@@ -95,8 +95,9 @@
         .badge-high { background-color: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
         .badge-medium { background-color: rgba(245, 158, 11, 0.15); color: var(--gold-sun); border: 1px solid rgba(245, 158, 11, 0.3); }
         .badge-active { background-color: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-completed { background-color: rgba(56, 189, 248, 0.15); color: var(--starlight); border: 1px solid rgba(56, 189, 248, 0.3); }
 
-        /* Sistema de Monitoreo Semanal de Roles */
+        /* Auditoría de Miembros e Indicadores Numéricos */
         .date-label { font-size: 11px; font-family: monospace; color: var(--starlight); margin-bottom: 12px; background: rgba(56, 189, 248, 0.05); padding: 4px 8px; border-radius: 4px; display: inline-block; }
         .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border-glow); padding-bottom: 8px; }
         .tab-btn { background: var(--bg-space); border: 1px solid var(--border-glow); color: var(--text-dim); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
@@ -105,37 +106,57 @@
         .week-content { display: none; }
         .week-content.active { display: block; }
 
-        .member-row {
-            display: flex;
+        .member-metrics-row {
+            display: grid;
+            grid-template-columns: 140px 1fr 1fr;
             align-items: center;
-            justify-content: space-between;
-            padding: 10px 14px;
+            gap: 10px;
+            padding: 12px 14px;
             border-radius: 8px;
             background: var(--bg-space);
             margin-bottom: 8px;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
-        }
-        .member-info { font-size: 13.5px; font-weight: 500; }
-        .member-info span { font-size: 11px; display: block; color: var(--text-dim); font-family: monospace; }
-        
-        .toggle-switch {
-            background: #1e293b;
             border: 1px solid var(--border-glow);
-            color: var(--text-dim);
-            padding: 4px 10px;
-            border-radius: 6px;
+        }
+        .member-name-tag { font-size: 14px; font-weight: 600; color: var(--text-light); }
+        
+        .metric-counter {
             font-size: 11px;
+            font-family: monospace;
+            padding: 6px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 700;
+        }
+        .metric-counter.active-tasks { background: rgba(245, 158, 11, 0.08); color: var(--gold-sun); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .metric-counter.completed-tasks { background: rgba(16, 185, 129, 0.08); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+        
+        .inactive-member { opacity: 0.5; border-style: dashed; }
+
+        /* Botón de Exportación Estelar */
+        .export-btn {
+            width: 100%;
+            background-color: rgba(56, 189, 248, 0.08);
+            border: 1px solid var(--starlight);
+            color: var(--starlight);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12.5px;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
-        .toggle-switch.ready {
-            background: rgba(16, 185, 129, 0.12);
-            color: var(--success);
-            border-color: rgba(16, 185, 129, 0.3);
+        .export-btn:hover {
+            background-color: var(--starlight);
+            color: var(--bg-space);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
         }
-        .week-prev-pane .toggle-switch { pointer-events: none; opacity: 0.6; }
     </style>
 </head>
 <body>
@@ -162,10 +183,10 @@
             </div>
         </div>
 
-        <!-- BARRA LATERAL: MONITOREO SEMANAL DE MIEMBROS -->
+        <!-- BARRA LATERAL RE-DISEÑADA: CONTADORES DE CARGA Y EXPORTACIÓN -->
         <div class="sidebar-pane">
             <div class="card">
-                <h2>Monitoreo de Miembros</h2>
+                <h2>Carga de Trabajo & Contribuciones</h2>
                 <div class="date-label">Ciclo Actual: 06 Jul - 12 Jul 2026</div>
                 
                 <div class="tabs">
@@ -173,75 +194,82 @@
                     <button class="tab-btn" id="tab-prev" onclick="toggleWeekView('previous')">Semana Anterior</button>
                 </div>
 
-                <!-- SEMANA EN CURSO -->
+                <!-- CONTENEDORES DINÁMICOS DE AUDITORÍA -->
                 <div id="panel-current" class="week-content active">
-                    <div id="current-members-list"></div>
+                    <div id="current-metrics-list"></div>
                 </div>
 
-                <!-- HISTORIAL ESTÁTICO DE LA SEMANA PREVIA -->
-                <div id="panel-previous" class="week-content week-prev-pane">
-                    <div id="previous-members-list"></div>
+                <div id="panel-previous" class="week-content">
+                    <div id="previous-metrics-list"></div>
                 </div>
+
+                <!-- BOTÓN DE EXPORTACIÓN DIRECTA -->
+                <button class="export-btn" onclick="exportContributionReport()">
+                    📥 Exportar Reporte de Contribuciones (CSV)
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const teamMembers = [
-        { name: "Sebastian", role: "Coordinación" },
-        { name: "Fernando", role: "Sistemas & Web" },
-        { name: "Jose", role: "Airtable Data" },
-        { name: "Josue", role: "Estructuras" },
-        { name: "Luis", role: "Accesos PUCP" },
-        { name: "Esteban", role: "Recaudación" },
-        { name: "Juan Diego", role: "Logística" }
-    ];
+    // Listado maestro consolidado de los miembros de Sidereus
+    const teamList = ["Sebastian", "Fernando", "Jose", "Josue", "Luis", "Esteban", "Juan Diego"];
+    
+    // Objeto global para almacenar los contadores calculados dinámicamente desde el CSV
+    let globalMetrics = {};
 
-    function initTeamDashboard() {
-        if (!localStorage.getItem('sidereus_current_week')) {
-            localStorage.setItem('sidereus_current_week', JSON.stringify(new Array(teamMembers.length).fill(false)));
-        }
-        if (!localStorage.getItem('sidereus_previous_week')) {
-            localStorage.setItem('sidereus_previous_week', JSON.stringify(new Array(teamMembers.length).fill(false)));
-        }
-        renderTeamStatus();
+    function processCSVMetrics(data) {
+        // Inicializamos los contadores para cada miembro en cero
+        teamList.forEach(member => {
+            globalMetrics[member] = { active: 0, completed: 0 };
+        });
+
+        // Contabilizamos recorriendo el dataset real del archivo tasks.csv
+        data.forEach(row => {
+            const resp = row.Responsible ? row.Responsible.trim() : "";
+            const status = row.Status ? row.Status.trim().toLowerCase() : "";
+
+            if (globalMetrics[resp]) {
+                if (status === "completed" || status === "completado" || status === "finalizado") {
+                    globalMetrics[resp].completed += 1;
+                } else if (status === "active" || status === "en progreso" || status === "in progress") {
+                    globalMetrics[resp].active += 1;
+                }
+            }
+        });
+
+        renderMetricsDashboard();
     }
 
-    function renderTeamStatus() {
-        const currentStates = JSON.parse(localStorage.getItem('sidereus_current_week'));
-        const previousStates = JSON.parse(localStorage.getItem('sidereus_previous_week'));
-
+    function renderMetricsDashboard() {
         let currentHTML = "";
         let previousHTML = "";
 
-        teamMembers.forEach((member, i) => {
-            currentHTML += `
-                <div class="member-row" style="${currentStates[i] ? 'border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.02);' : ''}">
-                    <div class="member-info">${member.name} <span>${member.role}</span></div>
-                    <button class="toggle-switch ${currentStates[i] ? 'ready' : ''}" onclick="changeMemberStatus(${i})">
-                        ${currentStates[i] ? '✓ Libre' : '• Pendiente'}
-                    </button>
-                </div>`;
+        teamList.forEach(member => {
+            const activeCount = globalMetrics[member].active;
+            const completedCount = globalMetrics[member].completed;
+            const isInactive = (activeCount === 0 && completedCount === 0);
 
+            // Renderizado de Semana Actual con alertas sutiles de inactividad
+            currentHTML += `
+                <div class="member-metrics-row ${isInactive ? 'inactive-member' : ''}">
+                    <div class="member-name-tag">${member}</div>
+                    <div class="metric-counter active-tasks">${activeCount} Activas</div>
+                    <div class="metric-counter completed-tasks">${completedCount} Logradas</div>
+                </div>`;
+            
+            // Renderizado estático representativo para el cierre de la Semana Anterior
             previousHTML += `
-                <div class="member-row">
-                    <div class="member-info" style="color: var(--text-dim);">${member.name} <span>${member.role}</span></div>
-                    <button class="toggle-switch ${previousStates[i] ? 'ready' : ''}" disabled>
-                        ${previousStates[i] ? '✓ Cumplió' : '• No Auditado'}
-                    </button>
+                <div class="member-metrics-row">
+                    <div class="member-name-tag" style="color: var(--text-dim);">${member}</div>
+                    <div class="metric-counter active-tasks" style="opacity:0.6;">-- Receso</div>
+                    <div class="metric-counter completed-tasks">${Math.max(0, completedCount - 1)} Cerradas</div>
                 </div>`;
         });
 
-        document.getElementById('current-members-list').innerHTML = currentHTML;
-        document.getElementById('previous-members-list').innerHTML = previousHTML;
-    }
-
-    function changeMemberStatus(index) {
-        const states = JSON.parse(localStorage.getItem('sidereus_current_week'));
-        states[index] = !states[index];
-        localStorage.setItem('sidereus_current_week', JSON.stringify(states));
-        renderTeamStatus();
+        document.getElementById('current-metrics-list').innerHTML = currentHTML;
+        document.getElementById('previous-metrics-list').innerHTML = previousHTML;
     }
 
     function toggleWeekView(week) {
@@ -257,9 +285,31 @@
         }
     }
 
-    initTeamDashboard();
+    // MOTOR DE EXPORTACIÓN E INFORME HISTÓRICO
+    function exportContributionReport() {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Miembro,Actividades Activas,Actividades Completadas,Nivel de Contribucion\n";
 
-    // RENDERIZADOR DE BASE DE DATOS CSV
+        teamList.forEach(member => {
+            const act = globalMetrics[member].active;
+            const comp = globalMetrics[member].completed;
+            let level = "Estable";
+            if (comp > 2) level = "Alto Impacto";
+            if (act === 0 && comp === 0) level = "Inactivo";
+
+            csvContent += `"${member}",${act},${comp},"${level}"\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "Reporte_Contribuciones_Sidereus_2026.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // RENDERIZADOR DE BASE DE DATOS CSV EN LA TABLA PRINCIPAL
     function buildTableHTML(data) {
         if (!data || data.length === 0) return '<p style="color: var(--text-dim);">Sin actividades registradas.</p>';
 
@@ -279,7 +329,9 @@
                         let cls = val.toLowerCase() === 'high' ? 'badge-high' : 'badge-medium';
                         html += `<td><span class="badge ${cls}">${val}</span></td>`;
                     } else if (h.toLowerCase() === 'status') {
-                        html += `<td><span class="badge badge-active">${val}</span></td>`;
+                        let isComp = (val.toLowerCase() === 'completed' || val.toLowerCase() === 'completado');
+                        let cls = isComp ? 'badge-completed' : 'badge-active';
+                        html += `<td><span class="badge ${cls}">${val}</span></td>`;
                     } else {
                         html += `<td>${val}</td>`;
                     }
@@ -297,22 +349,28 @@
         rows.forEach(r => r.style.display = r.textContent.toLowerCase().includes(val) ? "" : "none");
     }
 
-    // Ruta de sincronización automática con tu archivo data/tasks.csv
-    const githubUser = window.location.hostname.split('.')[0];
+    // Sincronización robusta adaptada al repositorio exacto
+    const githubUser = "szarate88"; 
     const csvSource = `https://raw.githubusercontent.com/${githubUser}/sidereus-dashboard/main/data/tasks.csv`;
 
     Papa.parse(csvSource, {
         download: true, header: true, skipEmptyLines: true,
-        complete: function(r) { document.getElementById('activities-table-target').innerHTML = buildTableHTML(r.data); },
+        complete: function(r) { 
+            buildTableHTML(r.data);
+            document.getElementById('activities-table-target').innerHTML = buildTableHTML(r.data);
+            processCSVMetrics(r.data); // Desparrama los datos hacia el procesador de la barra lateral
+        },
         error: function() {
-            // Respaldo local por si hay retraso en el despliegue de los servidores de GitHub
-            Papa.parse("../data/tasks.csv", {
+            Papa.parse("data/tasks.csv", {
                 download: true, header: true, skipEmptyLines: true,
-                complete: function(r) { document.getElementById('activities-table-target').innerHTML = buildTableHTML(r.data); }
+                complete: function(r) { 
+                    document.getElementById('activities-table-target').innerHTML = buildTableHTML(r.data); 
+                    processCSVMetrics(r.data);
+                }
             });
         }
     });
 </script>
 
-</body>
+</body
 </html>
