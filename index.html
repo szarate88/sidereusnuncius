@@ -8,12 +8,12 @@
     
     <style>
         :root {
-            --bg-space: #0b0f19;       /* Azul oscuro astronómico profundo */
-            --bg-card: #131c2e;        /* Contenedor estelar */
-            --text-light: #f1f5f9;     /* Blanco nebula */
-            --text-dim: #94a3b8;       /* Gris cósmico */
-            --starlight: #38bdf8;      /* Azul cian brillante */
-            --gold-sun: #f59e0b;       /* Oro sideral */
+            --bg-space: #0b0f19;       
+            --bg-card: #131c2e;        
+            --text-light: #f1f5f9;     
+            --text-dim: #94a3b8;       
+            --starlight: #38bdf8;      
+            --gold-sun: #f59e0b;       
             --border-glow: #1e293b;
             --success: #10b981;
             --danger: #ef4444;
@@ -94,10 +94,10 @@
         .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
         .badge-high { background-color: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
         .badge-medium { background-color: rgba(245, 158, 11, 0.15); color: var(--gold-sun); border: 1px solid rgba(245, 158, 11, 0.3); }
-        .badge-active { background-color: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
-        .badge-completed { background-color: rgba(56, 189, 248, 0.15); color: var(--starlight); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-active { background-color: rgba(56, 189, 248, 0.15); color: var(--starlight); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-completed { background-color: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
 
-        /* Auditoría de Miembros e Indicadores Numéricos */
+        /* Indicadores Numéricos */
         .date-label { font-size: 11px; font-family: monospace; color: var(--starlight); margin-bottom: 12px; background: rgba(56, 189, 248, 0.05); padding: 4px 8px; border-radius: 4px; display: inline-block; }
         .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border-glow); padding-bottom: 8px; }
         .tab-btn { background: var(--bg-space); border: 1px solid var(--border-glow); color: var(--text-dim); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
@@ -127,12 +127,11 @@
             text-align: center;
             font-weight: 700;
         }
-        .metric-counter.active-tasks { background: rgba(245, 158, 11, 0.08); color: var(--gold-sun); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .metric-counter.active-tasks { background: rgba(56, 189, 248, 0.08); color: var(--starlight); border: 1px solid rgba(56, 189, 248, 0.2); }
         .metric-counter.completed-tasks { background: rgba(16, 185, 129, 0.08); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
         
         .inactive-member { opacity: 0.5; border-style: dashed; }
 
-        /* Botón de Exportación Estelar */
         .export-btn {
             width: 100%;
             background-color: rgba(56, 189, 248, 0.08);
@@ -173,7 +172,6 @@
     </header>
 
     <div class="layout-grid">
-        <!-- ÁREA DE OPERACIONES DE COMPONENTES MACRO -->
         <div class="main-pane">
             <div class="card">
                 <h2>Cronograma de Actividades Críticas</h2>
@@ -183,18 +181,17 @@
             </div>
         </div>
 
-        <!-- BARRA LATERAL RE-DISEÑADA: CONTADORES DE CARGA Y EXPORTACIÓN -->
         <div class="sidebar-pane">
             <div class="card">
                 <h2>Carga de Trabajo & Contribuciones</h2>
-                <div class="date-label">Ciclo Actual: 06 Jul - 12 Jul 2026</div>
+                <!-- CAMBIO SOLICITADO A LA SEMANA ACTUAL DE JULIO 2026 -->
+                <div class="date-label">Ciclo Actual: 20 Jul - 26 Jul 2026</div>
                 
                 <div class="tabs">
                     <button class="tab-btn active" id="tab-curr" onclick="toggleWeekView('current')">Semana Actual</button>
                     <button class="tab-btn" id="tab-prev" onclick="toggleWeekView('previous')">Semana Anterior</button>
                 </div>
 
-                <!-- CONTENEDORES DINÁMICOS DE AUDITORÍA -->
                 <div id="panel-current" class="week-content active">
                     <div id="current-metrics-list"></div>
                 </div>
@@ -203,7 +200,6 @@
                     <div id="previous-metrics-list"></div>
                 </div>
 
-                <!-- BOTÓN DE EXPORTACIÓN DIRECTA -->
                 <button class="export-btn" onclick="exportContributionReport()">
                     📥 Exportar Reporte de Contribuciones (CSV)
                 </button>
@@ -213,19 +209,14 @@
 </div>
 
 <script>
-    // Listado maestro consolidado de los miembros de Sidereus
     const teamList = ["Sebastian", "Fernando", "Jose", "Josue", "Luis", "Esteban", "Juan Diego"];
-    
-    // Objeto global para almacenar los contadores calculados dinámicamente desde el CSV
     let globalMetrics = {};
 
     function processCSVMetrics(data) {
-        // Inicializamos los contadores para cada miembro en cero
         teamList.forEach(member => {
             globalMetrics[member] = { active: 0, completed: 0 };
         });
 
-        // Contabilizamos recorriendo el dataset real del archivo tasks.csv
         data.forEach(row => {
             const resp = row.Responsible ? row.Responsible.trim() : "";
             const status = row.Status ? row.Status.trim().toLowerCase() : "";
@@ -251,7 +242,6 @@
             const completedCount = globalMetrics[member].completed;
             const isInactive = (activeCount === 0 && completedCount === 0);
 
-            // Renderizado de Semana Actual con alertas sutiles de inactividad
             currentHTML += `
                 <div class="member-metrics-row ${isInactive ? 'inactive-member' : ''}">
                     <div class="member-name-tag">${member}</div>
@@ -259,7 +249,6 @@
                     <div class="metric-counter completed-tasks">${completedCount} Logradas</div>
                 </div>`;
             
-            // Renderizado estático representativo para el cierre de la Semana Anterior
             previousHTML += `
                 <div class="member-metrics-row">
                     <div class="member-name-tag" style="color: var(--text-dim);">${member}</div>
@@ -285,7 +274,6 @@
         }
     }
 
-    // MOTOR DE EXPORTACIÓN E INFORME HISTÓRICO
     function exportContributionReport() {
         let csvContent = "data:text/csv;charset=utf-8,";
         csvContent += "Miembro,Actividades Activas,Actividades Completadas,Nivel de Contribucion\n";
@@ -309,7 +297,6 @@
         document.body.removeChild(link);
     }
 
-    // RENDERIZADOR DE BASE DE DATOS CSV EN LA TABLA PRINCIPAL
     function buildTableHTML(data) {
         if (!data || data.length === 0) return '<p style="color: var(--text-dim);">Sin actividades registradas.</p>';
 
@@ -349,16 +336,14 @@
         rows.forEach(r => r.style.display = r.textContent.toLowerCase().includes(val) ? "" : "none");
     }
 
-    // Sincronización robusta adaptada al repositorio exacto
     const githubUser = "szarate88"; 
     const csvSource = `https://raw.githubusercontent.com/${githubUser}/sidereus-dashboard/main/data/tasks.csv`;
 
     Papa.parse(csvSource, {
         download: true, header: true, skipEmptyLines: true,
         complete: function(r) { 
-            buildTableHTML(r.data);
             document.getElementById('activities-table-target').innerHTML = buildTableHTML(r.data);
-            processCSVMetrics(r.data); // Desparrama los datos hacia el procesador de la barra lateral
+            processCSVMetrics(r.data); 
         },
         error: function() {
             Papa.parse("data/tasks.csv", {
@@ -372,5 +357,5 @@
     });
 </script>
 
-</body
+</body>
 </html>
