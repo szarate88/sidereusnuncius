@@ -1,16 +1,16 @@
 ID,Activity,Component,Responsible,Priority,Deadline,Status
-1,Actualizar bios de la web (Remitir contenido a Fernando),Actualización de Pagina Web,Fernando,High,2026-07-24,Active
-2,Lluvia de ideas para perfilar dolores de panelistas,Estrategia,Jose,High,2026-07-12,Completed
-3,Sistematizar cuadro de estado de mesas desde Airtable,Encuentro CTS 2026,Sebastian,High,2026-07-12,Completed
-4,Estrategia de recaudación y pitch en GoFundMe,Recaudación de Fondos,Esteban,High,2026-07-12,Completed
-5,Darle movimiento a las convocatorias en redes y guías para pregrado,Actualización de Redes Sociales,Esteban,High,2026-07-24,Active
-6,Coordinar apoyo para la gestión contable del encuentro,Tributación SUNAT,Sebastian,High,2026-07-15,Completed
-7,Diseñar e implementar formulario de registro en Airtable para el publico,Encuentro CTS 2026,Sebastian,Medium,2026-07-24,Active
-8,Elaborar checklist de plantillas e instrumentos operativos,Ayuda memoria – Acciones posteriores,Juan Diego,High,2026-07-27,Active
-9,Conformar lista de voluntarios (Perfiles y beneficios),Aliados,Juan Diego,Medium,2026-08-03,Active
-10,Diseñar matriz de criterios para evaluación de ponencias,Proyectos,Esteban,Medium,2026-07-31,Active
+1,Compartir el GoFundMe con contactos internacionales,Recaudación de Fondos,Sebastian,High,2026-07-21,Active
+2,Actualizar bios de la web (Remitir contenido a Fernando),Actualización de Pagina Web,Fernando,High,2026-07-24,Active
+3,Lluvia de ideas para completar el brief de marca,Estrategia,Jose,High,2026-07-24,Active
+4,Darle movimiento a las convocatorias en redes y guías para pregrado,Actualización de Redes Sociales,Esteban,High,2026-07-24,Active
+5,Diseñar e implementar formulario de registro en Airtable para el publico,Encuentro CTS 2026,Sebastian,Medium,2026-07-24,Active
+6,Tercer Avance de Revision Sistematica en Rayyan AI,Investigacion,Sebastian,Medium,2026-07-24,Active
+7,Elaborar checklist de plantillas e instrumentos operativos,Ayuda memoria – Acciones posteriores,Juan Diego,High,2026-07-27,Active
+8,Firma de Convenio con Rios Burga,Firma de Convenios,Fernando,High,2026-07-31,Active
+9,Diseñar matriz de criterios para evaluación de ponencias,Proyectos,Esteban,Medium,2026-07-31,Active
+10,Conformar lista de voluntarios (Perfiles y beneficios),Aliados,Juan Diego,Medium,2026-08-03,Active
 11,Consolidar relación de accesos externos para la PUCP,Convenios,Sebastian,Medium,2026-08-20,Active
-12,Tercer Avance de Revision Sistematica en Rayyan AI,Investigacion,Sebastian,Medium,2026-07-24,Active
-13,Lluvia de ideas para completar el brief de marca,Estrategia,Jose,High,2026-07-24,Active
-14,Compartir el GoFundMe con contactos internacionales,Recaudación de Fondos,Sebastian,High,2026-07-21,Active
-16,Firma de Convenio con Rios Burga,Firma de Convenios,Fernando,High,2026-07-31,Active
+12,Lluvia de ideas para perfilar dolores de panelistas,Estrategia,Jose,High,2026-07-12,Completed
+13,Sistematizar cuadro de estado de mesas desde Airtable,Encuentro CTS 2026,Sebastian,High,2026-07-12,Completed
+14,Estrategia de recaudación y pitch en GoFundMe,Recaudación de Fondos,Esteban,High,2026-07-12,Completed
+15,Coordinar apoyo para la gestión contable del encuentro,Tributación SUNAT,Sebastian,High,2026-07-15,Completed
