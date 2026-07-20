@@ -184,8 +184,8 @@
         <div class="sidebar-pane">
             <div class="card">
                 <h2>Carga de Trabajo & Contribuciones</h2>
-                <!-- CAMBIO SOLICITADO A LA SEMANA ACTUAL DE JULIO 2026 -->
-                <div class="date-label">Ciclo Actual: 20 Jul - 26 Jul 2026</div>
+                <!-- El rango de fechas de abajo ahora se calcula y actualiza solo -->
+                <div id="dynamic-date-label" class="date-label">Calculando ciclo estelar...</div>
                 
                 <div class="tabs">
                     <button class="tab-btn active" id="tab-curr" onclick="toggleWeekView('current')">Semana Actual</button>
@@ -212,19 +212,60 @@
     const teamList = ["Sebastian", "Fernando", "Jose", "Josue", "Luis", "Esteban", "Juan Diego"];
     let globalMetrics = {};
 
+    // ESTRUCTURA DE CÓMPUTO CRONOLÓGICO AUTOMÁTICO
+    function initDynamicDates() {
+        const today = new Date();
+        const currentDay = today.getDay(); 
+        
+        // Ajustamos los desfases para mapear de lunes (1) a domingo (7)
+        const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+        
+        const monday = new Date(today);
+        monday.setDate(today.getDate() + distanceToMonday);
+        
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        
+        const options = { day: '2-digit', month: 'short' };
+        const labelText = `Ciclo Actual: ${monday.toLocaleDateString('es-ES', options)} - ${sunday.toLocaleDateString('es-ES', options)} ${sunday.getFullYear()}`;
+        document.getElementById('dynamic-date-label').innerText = labelText;
+        
+        return { monday: monday, sunday: sunday };
+    }
+
     function processCSVMetrics(data) {
+        const dateRange = initDynamicDates();
+        
+        // El umbral de inicio de la semana previa son exactamente 7 días antes de este lunes
+        const prevMonday = new Date(dateRange.monday);
+        prevMonday.setDate(dateRange.monday.getDate() - 7);
+        const prevSunday = new Date(dateRange.monday);
+        prevSunday.setDate(dateRange.monday.getDate() - 1);
+
         teamList.forEach(member => {
-            globalMetrics[member] = { active: 0, completed: 0 };
+            globalMetrics[member] = { active: 0, completed: 0, completedPrevious: 0 };
         });
 
         data.forEach(row => {
             const resp = row.Responsible ? row.Responsible.trim() : "";
             const status = row.Status ? row.Status.trim().toLowerCase() : "";
-
+            const deadlineStr = row.Deadline ? row.Deadline.trim() : "";
+            
             if (globalMetrics[resp]) {
-                if (status === "completed" || status === "completado" || status === "finalizado") {
+                const isComp = (status === "completed" || status === "completado" || status === "finalizado");
+                const isActive = (status === "active" || status === "en progreso" || status === "in progress");
+                
+                if (isComp) {
                     globalMetrics[resp].completed += 1;
-                } else if (status === "active" || status === "en progreso" || status === "in progress") {
+                    
+                    // Si tiene fecha asignada, evaluamos si pertenece formalmente a la semana previa
+                    if (deadlineStr) {
+                        const deadlineDate = new Date(deadlineStr + "T00:00:00");
+                        if (deadlineDate >= prevMonday && deadlineDate <= prevSunday) {
+                            globalMetrics[resp].completedPrevious += 1;
+                        }
+                    }
+                } else if (isActive) {
                     globalMetrics[resp].active += 1;
                 }
             }
@@ -240,20 +281,25 @@
         teamList.forEach(member => {
             const activeCount = globalMetrics[member].active;
             const completedCount = globalMetrics[member].completed;
-            const isInactive = (activeCount === 0 && completedCount === 0);
+            const prevClosedCount = globalMetrics[member].completedPrevious;
+            
+            const isInactiveCurrent = (activeCount === 0 && completedCount === 0);
+            const isInactivePrevious = (prevClosedCount === 0);
 
+            // Fila de la Semana Actual
             currentHTML += `
-                <div class="member-metrics-row ${isInactive ? 'inactive-member' : ''}">
+                <div class="member-metrics-row ${isInactiveCurrent ? 'inactive-member' : ''}">
                     <div class="member-name-tag">${member}</div>
                     <div class="metric-counter active-tasks">${activeCount} Activas</div>
                     <div class="metric-counter completed-tasks">${completedCount} Logradas</div>
                 </div>`;
             
+            // Fila de la Semana Anterior Leyendo Datos Reales
             previousHTML += `
-                <div class="member-metrics-row">
-                    <div class="member-name-tag" style="color: var(--text-dim);">${member}</div>
-                    <div class="metric-counter active-tasks" style="opacity:0.6;">-- Receso</div>
-                    <div class="metric-counter completed-tasks">${Math.max(0, completedCount - 1)} Cerradas</div>
+                <div class="member-metrics-row ${isInactivePrevious ? 'inactive-member' : ''}">
+                    <div class="member-name-tag">${member}</div>
+                    <div class="metric-counter active-tasks" style="opacity:0.5;">-- Terminado</div>
+                    <div class="metric-counter completed-tasks">${prevClosedCount} Cerradas</div>
                 </div>`;
         });
 
@@ -276,16 +322,17 @@
 
     function exportContributionReport() {
         let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Miembro,Actividades Activas,Actividades Completadas,Nivel de Contribucion\n";
+        csvContent += "Miembro,Actividades Activas,Actividades Completadas,Cerradas Semana Anterior,Nivel de Contribucion\n";
 
         teamList.forEach(member => {
             const act = globalMetrics[member].active;
             const comp = globalMetrics[member].completed;
+            const prev = globalMetrics[member].completedPrevious;
             let level = "Estable";
-            if (comp > 2) level = "Alto Impacto";
+            if (comp > 2 || prev > 1) level = "Alto Impacto";
             if (act === 0 && comp === 0) level = "Inactivo";
 
-            csvContent += `"${member}",${act},${comp},"${level}"\n`;
+            csvContent += `"${member}",${act},${comp},${prev},"${level}"\n`;
         });
 
         const encodedUri = encodeURI(csvContent);
